@@ -1,0 +1,27 @@
+#====================================================================
+# run_single.mac — Single-material shielding study
+#
+# Edit the material name and thickness below, then run:
+#   ./KaiShielding run_single.mac
+#
+# Available materials:
+#   Kai alloys: FeCoNiCr, TaHEA, 0TaHEA, L12HEA, CCIMA, FeCoNiCrAl0.3
+#   References: YH2, LBE, SS316L, Inconel718, Fe, Pb
+#
+# Available spectra: fission, mono, DT, white
+#====================================================================
+
+# --- CONFIGURATION (45 threads fixed) ---
+/run/numberOfThreads 45
+/shield/material   TaHEA
+/shield/thickness  20 mm
+/source/spectrum   fission
+# For mono-energetic: uncomment below
+# /source/spectrum energy
+# /source/energy   1.0 MeV
+
+/run/initialize
+
+# --- Run ---
+/run/printProgress 10000
+/run/beamOn        500000

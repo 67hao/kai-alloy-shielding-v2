@@ -1,0 +1,54 @@
+name: Kai Alloy Shielding Swarm v2
+on:
+  workflow_dispatch:
+    inputs:
+      primaries:
+        description: 'Số hạt tính toán mỗi job'
+        required: true
+        default: '1000000'
+      gdrive_folder:
+        description: 'Google Drive Folder ID'
+        required: true
+      is_rescue:
+        description: 'Chế độ cứu hộ (true/false)'
+        required: false
+        default: 'false'
+      rescue_jobs:
+        description: 'Danh sách jobs cứu hộ (cách nhau bởi dấu phẩy)'
+        required: false
+        default: ''
+
+jobs:
+  swarm-matrix:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        runner_id: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Micromamba & Runtime Binary
+        shell: bash
+        run: |
+          curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj bin/micromamba -O > /tmp/micromamba
+          chmod +x /tmp/micromamba
+          /tmp/micromamba create -y -p /tmp/env -c conda-forge geant4 expat zlib freetype cmake make gxx_linux-64 python=3.11 pandas numpy openpyxl google-api-python-client google-auth-httplib2 google-auth-oauthlib requests
+      - name: Compile Simulation Binary
+        shell: bash
+        run: |
+          export PATH="/tmp/env/bin:$PATH"
+          export LD_LIBRARY_PATH="/tmp/env/lib:$LD_LIBRARY_PATH"
+          mkdir -p build && cd build
+          /tmp/env/bin/cmake ..             -DCMAKE_CXX_COMPILER=$(which x86_64-conda-linux-gnu-g++ || echo "/tmp/env/bin/g++")             -DCMAKE_C_COMPILER=$(which x86_64-conda-linux-gnu-gcc || echo "/tmp/env/bin/gcc")             -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath,/tmp/env/lib -L/tmp/env/lib"             -DCMAKE_PREFIX_PATH=/tmp/env
+          make -j2
+
+      - name: Execute Simulation & Stream Results to Google Drive
+        env:
+          GDRIVE_OAUTH_JSON: ${{ secrets.GDRIVE_OAUTH_JSON }}
+          GDRIVE_FOLDER_ID: ${{ github.event.inputs.gdrive_folder }}
+        run: |
+          export PATH="/tmp/env/bin:$PATH"
+          python3 run_task.py --runner-id ${{ matrix.runner_id }} --primaries ${{ github.event.inputs.primaries }} \
+            --is-rescue ${{ github.event.inputs.is_rescue }} \
+            --rescue-jobs "${{ github.event.inputs.rescue_jobs }}"

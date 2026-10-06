@@ -1,0 +1,36 @@
+#====================================================================
+# vis.mac — Visualization for interactive mode
+#====================================================================
+
+/run/initialize
+
+# --- Open GL viewer ---
+/vis/open OGL 800x600-0+0
+/vis/drawVolume
+/vis/viewer/set/viewpointThetaPhi 60 30
+/vis/viewer/set/autoRefresh true
+
+# --- Geometry visualization ---
+/vis/geometry/set/visibility World 0 false
+/vis/geometry/set/colour Shield 0 0.2 0.4 0.8 0.6
+/vis/geometry/set/colour Scorer 0 0.8 0.2 0.2 0.4
+
+# --- Trajectory drawing ---
+/vis/scene/add/trajectories smooth
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set neutron cyan
+/vis/modeling/trajectories/drawByParticleID-0/set gamma green
+/vis/modeling/trajectories/drawByParticleID-0/set proton red
+/vis/modeling/trajectories/drawByParticleID-0/set e- yellow
+
+# --- Step points ---
+/vis/scene/add/hits
+/vis/scene/endOfEventAction accumulate 20
+
+# --- Default shield ---
+/shield/material TaHEA
+/shield/thickness 20 mm
+/source/spectrum fission
+
+# --- Show a few events ---
+/run/beamOn 10

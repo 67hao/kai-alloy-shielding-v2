@@ -1,0 +1,92 @@
+#====================================================================
+# run_scan_materials.mac — Systematic shielding comparison
+#
+# Scans ALL Kai alloy compositions + reference materials at the
+# same thickness (20 mm) with fission-spectrum neutrons.
+# This produces the core data for the proof-of-concept results
+# to attach to the cold email to Prof. Kai.
+#
+# Output: one CSV file per material with energy-dependent
+#         neutron transmission ratio.
+#
+# Post-processing: compare μ(E) curves across materials.
+#====================================================================
+
+/run/initialize
+/source/spectrum fission
+/run/printProgress 20000
+
+#--------------------------------------------------------------------
+# Run 1: SS316L (conventional nuclear steel — BASELINE)
+#--------------------------------------------------------------------
+/shield/material   SS316L
+/shield/thickness  20 mm
+/run/beamOn        200000
+# Rename output manually: mv neutron_transmission_spectrum.csv results_SS316L.csv
+
+#--------------------------------------------------------------------
+# Run 2: Pure Fe (simplest baseline)
+#--------------------------------------------------------------------
+/shield/material   Fe
+/shield/thickness  20 mm
+/run/beamOn        200000
+
+#--------------------------------------------------------------------
+# Run 3: FeCoNiCr equiatomic HEA
+#--------------------------------------------------------------------
+/shield/material   FeCoNiCr
+/shield/thickness  20 mm
+/run/beamOn        200000
+
+#--------------------------------------------------------------------
+# Run 4: Fe30Ni30Cr30Al8Ta2 (2Ta-HEA) *** KEY ALLOY ***
+#--------------------------------------------------------------------
+/shield/material   TaHEA
+/shield/thickness  20 mm
+/run/beamOn        200000
+
+#--------------------------------------------------------------------
+# Run 5: Fe30Ni30Cr30Al10 (0Ta-HEA, control)
+#--------------------------------------------------------------------
+/shield/material   0TaHEA
+/shield/thickness  20 mm
+/run/beamOn        200000
+
+#--------------------------------------------------------------------
+# Run 6: L12-HEA (13-element, with W/Ta/Hf/Mo) *** KEY ALLOY ***
+#--------------------------------------------------------------------
+/shield/material   L12HEA
+/shield/thickness  20 mm
+/run/beamOn        200000
+
+#--------------------------------------------------------------------
+# Run 7: CCIMA CoNiAlTiTaNb *** KEY ALLOY ***
+# (tests Co activation + Ta/Nb shielding)
+#--------------------------------------------------------------------
+/shield/material   CCIMA
+/shield/thickness  20 mm
+/run/beamOn        200000
+
+#--------------------------------------------------------------------
+# Run 8: FeCoNiCrAl0.3
+#--------------------------------------------------------------------
+/shield/material   FeCoNiCrAl0.3
+/shield/thickness  20 mm
+/run/beamOn        200000
+
+#--------------------------------------------------------------------
+# Run 9: Inconel 718 (conventional Ni superalloy comparison)
+#--------------------------------------------------------------------
+/shield/material   Inconel718
+/shield/thickness  20 mm
+/run/beamOn        200000
+
+#====================================================================
+# NOTE: After running, each /run/beamOn overwrites the CSV files.
+# For a proper scan, use the provided Python batch script that
+# renames outputs between runs, OR modify RunAction to include
+# the material name in the output filename.
+#
+# Alternatively, run each material separately:
+#   ./KaiShielding run_single.mac  (edit material in macro each time)
+#====================================================================

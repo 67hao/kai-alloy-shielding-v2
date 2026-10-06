@@ -1,0 +1,19 @@
+#====================================================================
+# run_fission.mac — Fission spectrum neutron shielding test
+#
+# Runs 100k fission-spectrum neutrons through a 10mm slab of
+# Fe30Ni30Cr30Al8Ta2 HEA (Prof. Kai's 2Ta-HEA from Intermetallics
+# 2026). Outputs: neutron/gamma transmission spectra and Edep/NIEL.
+#====================================================================
+
+# --- Thread and Geometry configuration ---
+/run/numberOfThreads 45
+/shield/material   TaHEA
+/shield/thickness  10 mm
+/source/spectrum   fission
+
+/run/initialize
+
+# --- Run parameters ---
+/run/printProgress 10000
+/run/beamOn        100000

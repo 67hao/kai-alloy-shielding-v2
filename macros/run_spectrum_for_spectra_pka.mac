@@ -1,0 +1,62 @@
+#====================================================================
+# run_spectrum_for_spectra_pka.mac
+#
+# Generates a neutron flux spectrum inside the shield volume
+# in the CCFE-709 group format compatible with SPECTRA-PKA.
+#
+# WORKFLOW:
+#   1. Run this macro in Geant4 (produces neutron_flux_for_spectra_pka.dat)
+#   2. Copy the .dat file to your SPECTRA-PKA input directory
+#   3. In your SPECTRA-PKA .in file, set:
+#      flux_filename="neutron_flux_for_spectra_pka.dat"
+#      flux_rescale_value=<total_flux_n_cm2_s>
+#   4. Run SPECTRA-PKA to get PKA spectra for the alloy
+#
+# This creates the critical bridge:
+#   Geant4 (transport) → spectrum → SPECTRA-PKA (PKA analysis)
+#                                      ↓
+#                              PKA spectra → Kai's DPMD/kMC
+#
+# For proof-of-concept, we use a fission spectrum source.
+# For actual LFR analysis, replace with a realistic LFR core model.
+#====================================================================
+
+# --- Configuration (45 threads fixed) ---
+/run/numberOfThreads 45
+/shield/material   TaHEA
+/shield/thickness  20 mm
+/source/spectrum   fission
+
+/run/initialize
+
+# --- High statistics for good spectrum quality ---
+# 709 bins need adequate counts per bin
+# Minimum 500k events recommended, 2M for publication quality
+/run/printProgress 50000
+/run/beamOn        1000000
+
+#====================================================================
+# OUTPUT FILES PRODUCED:
+#
+# 1. neutron_flux_for_spectra_pka.dat
+#    → DIRECT INPUT to SPECTRA-PKA as flux_filename
+#    → 709-group neutron spectrum in SPECTER format
+#    → Energy in eV (descending), flux per group
+#
+# 2. neutron_flux_summary.txt
+#    → Human-readable statistics and diagnostics
+#    → Check for out-of-range neutrons, peak energy group, etc.
+#
+# 3. neutron_transmission_spectrum.csv  (as before)
+# 4. gamma_transmission_spectrum.csv    (as before)
+#
+# NEXT STEPS:
+#   cd ../spectra_pka_inputs/
+#   # Edit TaHEA.in:
+#   #   flux_filename="neutron_flux_for_spectra_pka.dat"
+#   #   flux_rescale_value=3.25e14  (or actual LFR flux)
+#   /path/to/spectra-pka TaHEA.in
+#   # → TaHEA_total_pka.out        (total PKA spectrum)
+#   # → TaHEA_element_pka_sums.out (per-element PKA spectra)
+#   # → TaHEA_MTd_by_nuclide.out   (per-channel DPA breakdown)
+#====================================================================
